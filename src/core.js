@@ -4,7 +4,6 @@
  * @author [[w:pt:user:!Silent]]
  * @date 09/apr/2015
  * @update 24/oct/2017
- * @see [[MediaWiki:Gadget-requestForAdminship.js]]
  */
 /* jshint laxbreak: true, unused: true, -W007 */
 /* global mw, $ */
