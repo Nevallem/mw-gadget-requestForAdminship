@@ -1,0 +1,18 @@
+#rfa-close-dialog-result-textarea {
+	height: 150px;
+	width: 400px;
+}
+
+#rfa-close-dialog-open {
+	cursor: pointer;
+}
+
+.rfa-dialog label {
+	display: block;
+	padding: 2px;
+}
+
+
+.rfa-fillField {
+	border: 1px solid red;
+}
