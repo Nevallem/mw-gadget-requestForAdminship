@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Creates and closes requests for adminship in pt.wikipedia
  *
  * @author [[w:pt:user:!Silent]]
@@ -48,8 +48,8 @@ mw.messages.set( {
 	'rfa-create-dialog-argumentation-0': 'Apresente sua argumentação em prol do candidato: ',
 	'rfa-create-dialog-argumentation-1': 'Apresente uma argumentação em prol da sua candidatura: ',
 	'rfa-create-dialog-msgEsplanada': 'Mensagem que será enviada a Esplanada: ',
-	'rfa-create-dialog-msgEsplanada-default-0': 'Anuncio a todos que nomeei o editor [[Usuário:$1|$1]] ao cargo de [[WP:Administrador|]]. ~~' + '~~',
-	'rfa-create-dialog-msgEsplanada-default-1': 'Anuncio a todos que me auto-nomeei ao cargo de [[WP:Administrador|]]. ~~' + '~~',
+	'rfa-create-dialog-msgEsplanada-default-0': 'Anuncio a todos que nomeei o editor [[Usuário:$1|$1]] ao cargo de [[WP:Administrador|]]. ~~' + String.fromCharCode( 126 ) + '~',
+	'rfa-create-dialog-msgEsplanada-default-1': 'Anuncio a todos que me auto-nomeei ao cargo de [[WP:Administrador|]]. ~~' + String.fromCharCode( 126 ) + '~',
 
 	// create → status
 	'rfa-create-status-title': 'Criando candidatura',
@@ -494,7 +494,7 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 				rfaText = text;
 
 				return text
-					.replace( /(^\{\{Wikipédia:.+)data=.+(}})/, '$1' + result.toLowerCase() + '$2\n\n' + commentary + ' ~~' + '~~' )
+					.replace( /(^\{\{Wikipédia:.+)data=.+(}})/, '$1' + result.toLowerCase() + '$2\n\n' + commentary + ' ~~' + String.fromCharCode( 126 ) + '~' )
 					.replace( /<!-- ?({{Wikipédia:.+}}) ?-->/, '$1' );
 			},
 			summary: rfa.message( 'rfa-close-summary-closing', result )
