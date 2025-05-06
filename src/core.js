@@ -627,11 +627,6 @@ rfa.close.init = function() {
 	};
 
 	$( '#rfa-close-dialog-open' ).click( function() {
-		/*if ( $.inArray( mw.config.get( 'wgUserGroups' ), 'bureaucrat' ) === -1 ) {
-			rfa.alert( rfa.message( 'rfa-alert-cantClose' ) );
-			return;
-		}
-
 		if ( $( '#mw-content-text' ).text().search( 'Por favor, não o modifique' ) !== -1 ) {
 			rfa.alert( rfa.message( 'rfa-alert-alreadyClosed' ) );
 			return;
@@ -640,7 +635,7 @@ rfa.close.init = function() {
 		if ( mw.config.get( 'wgUserName' ) === candidateName ) {
 			rfa.alert( rfa.message( 'rfa-alert-ownRequest' ) );
 			return;
-		}*/
+		}
 
 		rfa.dialog( {
 			title: rfa.message( 'rfa-close-dialog-title' ),
@@ -668,7 +663,7 @@ rfa.close.init = function() {
 
 if ( mw.config.get( 'wgPageName' ) === 'Wikipédia:Administradores/Pedidos_de_aprovação' ) {
 	$( rfa.create.init );
-} else if ( mw.config.get( 'wgPageName' ).indexOf( 'Wikipédia:Administradores/Pedidos_de_aprovação/' ) !== -1 ) {
+} else if ( mw.config.get( 'wgPageName' ).indexOf( 'Wikipédia:Administradores/Pedidos_de_aprovação/' ) !== -1 && $.inArray( mw.config.get( 'wgUserGroups' ), 'bureaucrat' ) !== -1 ) {
 	$( rfa.close.init );
 }
 
