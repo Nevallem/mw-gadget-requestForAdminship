@@ -555,7 +555,12 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 			section: { 'Aprovado': 1, 'Reprovado': 2, 'Cancelado': 3 }[ result ],
 			text: function( text ) {
 				let sectionContent,
-					archiveTemplate = { 'Aprovado': 'Aprovo', 'Reprovado': 'Não aprovo', 'Cancelado': 'Cancelado' }[ result ]
+					archiveTemplate = { 'Aprovado': 'Aprovo', 'Reprovado': 'Não aprovo', 'Cancelado': 'Cancelado' }[ result ],
+					refreshPage = function() {
+						rfa.status.log( rfa.message( 'rfa-status-finished' ) );
+						$( window ).off( 'beforeunload' );
+						location.href = mw.util.getUrl( 'Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix );
+					}
 					/*rfaLink = /Wikipédia:Administradores\/Pedidos de aprovação\/.+\|([^\]]+)/*/;
 
 				if ( result === 'Aprovado' ) {
@@ -586,13 +591,10 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 						title: 'User talk:' + candidateName,
 						appendtext: '\n{{subst:Novo administrador}' + '}',
 						summary: rfa.message( 'rfa-close-summary-sendMsg' )
-					} ).done( function() {
-						rfa.status.log( rfa.message( 'rfa-status-finished' ) );
-						$( window ).off( 'beforeunload' );
-						location.href = mw.util.getUrl( 'Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix );
-					} );
+					} ).done( refreshPage );
 				} else {
 					text = text.replace( new RegExp( '(\n|.)+(== ?' + result + 's ?==\n)(\n|.)+' ), '$2' + sectionContent + text.substring( text.indexOf( '\n[[Categoria:' ) - 1 ) );
+					refreshPage();
 				}
 
 				return text;
@@ -625,7 +627,7 @@ rfa.close.init = function() {
 	};
 
 	$( '#rfa-close-dialog-open' ).click( function() {
-		if ( $.inArray( mw.config.get( 'wgUserGroups' ), 'bureaucrat' ) === -1 ) {
+		/*if ( $.inArray( mw.config.get( 'wgUserGroups' ), 'bureaucrat' ) === -1 ) {
 			rfa.alert( rfa.message( 'rfa-alert-cantClose' ) );
 			return;
 		}
@@ -638,7 +640,7 @@ rfa.close.init = function() {
 		if ( mw.config.get( 'wgUserName' ) === candidateName ) {
 			rfa.alert( rfa.message( 'rfa-alert-ownRequest' ) );
 			return;
-		}
+		}*/
 
 		rfa.dialog( {
 			title: rfa.message( 'rfa-close-dialog-title' ),
