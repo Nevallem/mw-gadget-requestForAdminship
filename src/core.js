@@ -1,17 +1,20 @@
 /**
- * Creates and closes requests for adminship in pt.wikipedia
+ * Creates and closes requests for adminship on pt.wikipedia
  *
  * @author [[w:pt:user:!Silent]]
  * @date 09/apr/2015
- * @update 24/oct/2017
+ * @update 06/may/2025
+ * @see [[MediaWiki:Gadget-requestForAdminship.js]]
+ * @source https://github.com/Nevallem/requestForAdminship
  */
-/* jshint laxbreak: true, unused: true, -W007 */
+
+/* jshint laxbreak: true, unused: true, -W007, esversion: 6 */
 /* global mw, $ */
 
-( function() {
+( function( window ) {
 'use strict';
 
-var rfa,
+let rfa,
 	api = new mw.Api();
 
 // Messages
@@ -30,7 +33,7 @@ mw.messages.set( {
 	'rfa-status-fail': 'Houve um problema entre as edições.',
 	'rfa-status-finished': 'Finalizado',
 	'rfa-status-done': 'FEITO',
-	'rfa-status-error': 'ERROR',
+	'rfa-status-error': 'ERRO',
 	'rfa-status-abort': 'O processo ainda não foi finalizado, deseja sair assim mesmo?',
 	'rfa-status-getContentPage': 'Obtendo o conteúdo da página "$1"',
 
@@ -39,6 +42,9 @@ mw.messages.set( {
 	'rfa-button-cancel': 'Cancelar',
 	'rfa-button-yes': 'Sim',
 	'rfa-button-no': 'Não',
+
+	// month names
+	'rfa-mothnames': 'jan fev mar abr mai jun jul ago set out nov dez',
 
 	// create → dialog
 	'rfa-create-dialog-title-0': 'Nomeação para administrador',
@@ -113,7 +119,7 @@ rfa = {
 	 * @return {jQuery}
 	 */
 	dialog: function( info, notClose ) {
-		var $rfaDialog = $( '<div class="rfa-dialog ui-widget"></div>' ).append( info.content );
+		let $rfaDialog = $( '<div class="rfa-dialog ui-widget"></div>' ).append( info.content );
 
 		if ( $( '.rfa-dialog' ).length && !notClose ) {
 			$( '.rfa-dialog' ).each( function() {
@@ -145,7 +151,7 @@ rfa = {
 	 * @param {boolean} [notClose=false] See "rfa.dialog"
 	 */
 	alert: function ( text, info, notClose ) {
-		var infoDefault,
+		let infoDefault,
 			buttons = {};
 
 		buttons[ rfa.message( 'rfa-button-OK' ) ] = function() {
@@ -177,7 +183,7 @@ rfa = {
 	 * @see see [[mw:API:Edit]]
 	 */
 	editPage: function( status, info ) {
-		var apiDeferred = $.Deferred(),
+		let apiDeferred = $.Deferred(),
 			edit = function( value ) {
 				rfa.status.log( status );
 
@@ -259,7 +265,7 @@ rfa.status = {};
  * @param {string} [errorName] Error name
  */
 rfa.status.log = function( status, errorName ) {
-	var log = '',
+	let log = '',
 		error = ( status === 'error' );
 
 	if ( $( '#rfa-status' ).html().lastIndexOf( '...' ) !== -1 ) {
@@ -270,7 +276,7 @@ rfa.status.log = function( status, errorName ) {
 	}
 
 	if ( !error ) {
-		log += status + ( ( status !== rfa.message( 'rfa-status-finished' ) ) ? '...' : '.' );
+		log += status + ( ( status !== rfa.message( 'rfa-status-finished' ) ) ? ' ... ' : '.' );
 	}
 
 	$( '#rfa-status' ).append( log );
@@ -282,7 +288,7 @@ rfa.status.log = function( status, errorName ) {
  * @param {mediaWiki.messages} title Title of prompt
  */
 rfa.status.open = function( title ) {
-	var buttons = {},
+	let buttons = {},
 		cancelButton = function() {
 			$( '.rfa-dialog' ).eq( 0 ).dialog( 'close' );
 			$( window ).off( 'beforeunload' );
@@ -330,7 +336,7 @@ rfa.create.verifyPreviousRfA = function( candidateName, count ) {
 		count++;
 	}
 
-	var page =  'Wikipédia:Administradores/Pedidos de aprovação/' + candidateName + ( !!count ? '/' + count : '' );
+	let page =  'Wikipédia:Administradores/Pedidos de aprovação/' + candidateName + ( !!count ? '/' + count : '' );
 
 	if ( !count ) {
 		count = 0;
@@ -357,7 +363,7 @@ rfa.create.verifyPreviousRfA = function( candidateName, count ) {
  * @param {boolean} isNominate If is nominate or not
 */
 rfa.create.run = function( candidateName, argumentation, announcement, isNominate ) {
-	var candidateNameFullSufix;
+	let candidateNameFullSufix;
 
 	rfa.status.open( rfa.message( 'rfa-create-status-title' ) );
 	rfa.status.log( rfa.message( 'rfa-create-status-verifyPreviousRfA' ) );
@@ -420,13 +426,13 @@ rfa.create.run = function( candidateName, argumentation, announcement, isNominat
  * Init
  */
 rfa.create.init = function() {
-	var isNominate,
+	let isNominate,
 		buttons = {},
 		$createButton = $( 'input[name="create"]' );
 
 	$createButton.eq( 0 ).attr( 'id', 'rfa-create-dialog-self' );
 	$createButton.eq( 1 ).attr( 'id', 'rfa-create-dialog-nominate' );
-	$( 'input[name="title"]' ).eq( 0 )
+	$( '#rfa-create-dialog-self' ).prev().prev().find( 'input' )
 		.val( mw.config.get( 'wgUserName' ).replace( /_/, '' ) )
 		.trigger( 'keyup' ); // enables the button
 
@@ -459,8 +465,8 @@ rfa.create.init = function() {
 		rfa.dialog( {
 			title: rfa.message( 'rfa-create-dialog-title-' + +!isNominate ),
 			content: '<label>' + rfa.message( 'rfa-create-dialog-name' ) + '<input id="rfa-create-dialog-name" /></label>'
-				+ '<br /><label>' + rfa.message( 'rfa-create-dialog-argumentation-' + +!isNominate ) + '<br /><textarea id="rfa-create-dialog-argumentation" style="height:150px" /></label>'
-				+ '<br /><label>' + rfa.message( 'rfa-create-dialog-msgEsplanada' ) + '<br /><textarea id="rfa-create-dialog-msgEsplanada" style="height:75px" /></label>',
+				+ '<br /><label>' + rfa.message( 'rfa-create-dialog-argumentation-' + +!isNominate ) + '<br /><textarea id="rfa-create-dialog-argumentation" style="height:150px"></textarea></label>'
+				+ '<br /><label>' + rfa.message( 'rfa-create-dialog-msgEsplanada' ) + '<br /><textarea id="rfa-create-dialog-msgEsplanada" style="height:75px"></textarea></label>',
 			height: 450,
 			width: 700,
 			buttons: buttons
@@ -483,7 +489,7 @@ rfa.close = {};
  * @param {string} candidateName Username
  */
 rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateName ) {
-	var rfaText;
+	let rfaText;
 
 	rfa.status.open( rfa.message( 'rfa-close-status-title' ) );
 	rfa.doEdits(
@@ -493,7 +499,7 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 				rfaText = text;
 
 				return text
-					.replace( /(^\{\{Wikipédia:.+)data=.+(}})/, '$1' + result.toLowerCase() + '$2\n\n' + commentary + ' ~~' + String.fromCharCode( 126 ) + '~' )
+					.replace( /(^\{\{Wikipédia:.+)data=.+(}})/, '$1' + result.toLowerCase() + '$2\n\n\{\{Início destaque}}\n' + commentary + ' ~~' + String.fromCharCode( 126 ) + '~\n\{\{Fim destaque}}' )
 					.replace( /<!-- ?({{Wikipédia:.+}}) ?-->/, '$1' );
 			},
 			summary: rfa.message( 'rfa-close-summary-closing', result )
@@ -501,7 +507,7 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 		rfa.editPage( rfa.message( 'rfa-close-status-updatingRfA' ), {
 			title: 'Predefinição:MRNomeações',
 			text: function( text ) {
-				var rfaLink = '* [[Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix + '|' + candidateName + ']]';
+				let rfaLink = '* [[Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix + '|' + candidateName + ']]';
 
 				text = text
 					.replace( rfaLink + '\n', '' )
@@ -540,19 +546,17 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 				return text;
 			},
 			summary: rfa.message( 'rfa-close-summary-requestListRemoving', candidateName, result )
-		} ),
-		rfa.editPage( rfa.message( 'rfa-close-status-sendMsg' ), {
-			title: 'User talk:' + candidateName,
-			appendtext: '\n{{subst:Novo administrador}' + '}',
-			summary: rfa.message( 'rfa-close-summary-sendMsg' )
 		} )
 	).done( function() {
+		let currentDate = new Date();
+
 		rfa.editPage( rfa.message( 'rfa-close-status-archiving' ), {
-			title: 'Wikipédia:Administradores/Pedidos de aprovação/Arquivo/' + ( new Date() ).getFullYear(),
+			title: 'Wikipédia:Administradores/Pedidos de aprovação/Arquivo/' + currentDate.getFullYear(),
 			section: { 'Aprovado': 1, 'Reprovado': 2, 'Cancelado': 3 }[ result ],
 			text: function( text ) {
-				var sectionContent,
-					rfaLink = /Wikipédia:Administradores\/Pedidos de aprovação\/.+\|([^\]]+)/;
+				let sectionContent,
+					archiveTemplate = { 'Aprovado': 'Aprovo', 'Reprovado': 'Não aprovo', 'Cancelado': 'Cancelado' }[ result ]
+					/*rfaLink = /Wikipédia:Administradores\/Pedidos de aprovação\/.+\|([^\]]+)/*/;
 
 				if ( result === 'Aprovado' ) {
 					sectionContent = text.substring( text.indexOf( '== Aprovados ==\n' ) + 16, text.indexOf( '\n== Reprovados ==' ) - 1 );
@@ -562,17 +566,31 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 					sectionContent = text.substring( text.indexOf( '== Cancelados ==\n' ) + 17, text.indexOf( '\n[[Categoria:' ) - 1 );
 				}
 
-				sectionContent += '\n* [[Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix + '|' + candidateName + ']]';
+				sectionContent += '\n\n\{\{' + archiveTemplate + '|<small>' + [
+						currentDate.getDate(),
+						rfa.message( 'rfa-mothnames' ).split( ' ' )[ currentDate.getMonth() ],
+						currentDate.getFullYear()
+					].join( '/' ) + '</small>}} - [[Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix + '|' + candidateName + ']]';
 
 				if ( result !== 'Cancelado' ) {
-					sectionContent += ' (' + ( /(==== ?A favor ?====(.|\n)*)(?=\==== ?Contra ?====)/.exec( rfaText )[ 0 ].split( /\n#[^:\n]/ ).length - 1 )
+					sectionContent += ' - (<small>Votos: ' + ( /(==== ?A favor ?====(.|\n)*)(?=\==== ?Contra ?====)/.exec( rfaText )[ 0 ].split( /\n#[^:\n]/ ).length - 1 )
 						+ '/' + ( /(==== ?Contra ?====(.|\n)*)(?=\==== ?Abstenções ?====)/.exec( rfaText )[ 0 ].split( /\n#[^:\n]/ ).length - 1 )
 						+ '/' + ( /(==== ?Abstenções ?====(.|\n)*)(?=\=== ?Comentários ?===)/.exec( rfaText )[ 0 ].split( /\n#[^:\n]/ ).length - 1 )
-					+ ')';
+					+ '</small>)';
 
-					text = text.replace( new RegExp( '(\n|.)+(== ?' + result + 's ?==\n)(\n|.)+' ), '$2' + sectionContent.split( '\n' ).sort( function( x, y ) {
+					text = text.replace( new RegExp( '(\n|.)*(== ?' + result + 's ?==\n)(\n|.)+' ), '$2' + sectionContent/*.split( '\n' ).sort( function( x, y ) {
 						return ( x === '' || y === '' ) ? true : rfaLink.exec( y )[ 1 ].toLowerCase() < rfaLink.exec( x )[ 1 ].toLowerCase();
-					} ).join( '\n' ) );
+					} ).join( '\n' )*/ );
+
+					rfa.editPage( rfa.message( 'rfa-close-status-sendMsg' ), {
+						title: 'User talk:' + candidateName,
+						appendtext: '\n{{subst:Novo administrador}' + '}',
+						summary: rfa.message( 'rfa-close-summary-sendMsg' )
+					} ).done( function() {
+						rfa.status.log( rfa.message( 'rfa-status-finished' ) );
+						$( window ).off( 'beforeunload' );
+						location.href = mw.util.getUrl( 'Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix );
+					} );
 				} else {
 					text = text.replace( new RegExp( '(\n|.)+(== ?' + result + 's ?==\n)(\n|.)+' ), '$2' + sectionContent + text.substring( text.indexOf( '\n[[Categoria:' ) - 1 ) );
 				}
@@ -580,10 +598,6 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
 				return text;
 			},
 			summary: rfa.message( 'rfa-close-summary-archiving', candidateName, result )
-		} ).done( function() {
-			rfa.status.log( rfa.message( 'rfa-status-finished' ) );
-			$( window ).off( 'beforeunload' );
-			location.href = mw.util.getUrl( 'Wikipédia:Administradores/Pedidos de aprovação/' + candidateNameFullSufix );
 		} );
 	} );
 };
@@ -592,11 +606,11 @@ rfa.close.run = function( result, commentary, candidateNameFullSufix, candidateN
  * Init
  */
 rfa.close.init = function() {
-	var buttons = {},
+	let buttons = {},
 		candidateNameFullSufix = mw.config.get( 'wgPageName' ).replace( /Wikipédia:Administradores\/Pedidos_de_aprovação\//, '' ),
 		candidateName = candidateNameFullSufix.split( '/' )[ 0 ];
 
-	$( 'h2 .mw-editsection a' ).eq( 1 ).after( ' | <a id="rfa-close-dialog-open">' + rfa.message( 'rfa-close-dialog-open' ) + '</a>' );
+	$( 'h2' ).eq( 1 ).find( 'a' ).after( '<small> | <a id="rfa-close-dialog-open">' + rfa.message( 'rfa-close-dialog-open' ) + '</a></small>' );
 
 	buttons[ rfa.message( 'rfa-button-OK' ) ] = function() {
 		if ( $( '#rfa-close-dialog-result' ).val() === '3' && !rfa.forceFill( $( '#rfa-close-dialog-result-textarea' ) ) ) {
@@ -611,20 +625,20 @@ rfa.close.init = function() {
 	};
 
 	$( '#rfa-close-dialog-open' ).click( function() {
-		/*if ( $.inArray( mw.config.get( 'wgUserGroups' ), 'bureaucrat' ) === -1 ) {
+		if ( $.inArray( mw.config.get( 'wgUserGroups' ), 'bureaucrat' ) === -1 ) {
 			rfa.alert( rfa.message( 'rfa-alert-cantClose' ) );
 			return;
-		}*/
+		}
 
 		if ( $( '#mw-content-text' ).text().search( 'Por favor, não o modifique' ) !== -1 ) {
 			rfa.alert( rfa.message( 'rfa-alert-alreadyClosed' ) );
 			return;
 		}
 
-		/*if ( mw.config.get( 'wgUserName' ) === candidateName ) {
+		if ( mw.config.get( 'wgUserName' ) === candidateName ) {
 			rfa.alert( rfa.message( 'rfa-alert-ownRequest' ) );
 			return;
-		}*/
+		}
 
 		rfa.dialog( {
 			title: rfa.message( 'rfa-close-dialog-title' ),
@@ -650,10 +664,12 @@ rfa.close.init = function() {
 	} );
 };
 
-//if ( mw.config.get( 'wgPageName' ) === 'Wikipédia:Administradores/Pedidos_de_aprovação' ) {
+if ( mw.config.get( 'wgPageName' ) === 'Wikipédia:Administradores/Pedidos_de_aprovação' ) {
 	$( rfa.create.init );
-//} else if ( mw.config.get( 'wgPageName' ).indexOf( 'Wikipédia:Administradores/Pedidos_de_aprovação/' ) !== -1 ) {
+} else if ( mw.config.get( 'wgPageName' ).indexOf( 'Wikipédia:Administradores/Pedidos_de_aprovação/' ) !== -1 ) {
 	$( rfa.close.init );
-//}
+}
 
-}() );
+window.rfa = rfa;
+
+}( window ) );
